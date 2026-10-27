@@ -141,6 +141,38 @@ if (currentPage === 'article') {
       try { await navigator.clipboard.writeText(location.href); button.textContent = 'Link copied ✓'; $('#share-status').textContent = 'Story link copied to clipboard.'; }
       catch { $('#share-status').textContent = 'Copy the address from your browser to share this story.'; button.textContent = 'Copy the browser address'; }
     });
+
+    const articleUrl = new URL(storyUrl(story.slug), location.href).href;
+    const shareTitle = `${story.title} — SUBTEXT`;
+    const encodedUrl = encodeURIComponent(articleUrl);
+    const encodedTitle = encodeURIComponent(shareTitle);
+    const shareLinks = [
+      ['Facebook', `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`],
+      ['WhatsApp', `https://wa.me/?text=${encodeURIComponent(`${shareTitle}\n${articleUrl}`)}`],
+      ['X', `https://x.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`],
+      ['LinkedIn', `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`],
+      ['Telegram', `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`],
+      ['Email', `mailto:?subject=${encodedTitle}&body=${encodeURIComponent(`${shareTitle}\n\n${articleUrl}`)}`],
+    ];
+    $('#share-story').insertAdjacentHTML('afterend', '<button class="bookmark-button article-share-button" id="open-share" aria-haspopup="dialog" aria-controls="article-share-dialog">Share <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg></button>');
+    document.body.insertAdjacentHTML('beforeend', `<dialog id="article-share-dialog" class="article-share-dialog" aria-labelledby="article-share-title" aria-describedby="article-share-story"><div class="dialog-heading"><h2 id="article-share-title">Share this story.</h2><button class="icon-button" id="close-article-share" aria-label="Close sharing options">×</button></div><p class="article-share-story" id="article-share-story">${escape(story.title)}</p><div class="article-share-links">${shareLinks.map(([label, url]) => `<a href="${escape(url)}"${label === 'Email' ? '' : ' target="_blank" rel="noopener noreferrer"'}><span>${label}</span><span aria-hidden="true">↗</span><span class="sr-only">${label === 'Email' ? ' (opens your email app)' : ' (opens in a new tab)'}</span></a>`).join('')}</div><button class="button button-outline article-share-native" id="native-share"${typeof navigator.share === 'function' ? '' : ' hidden'}>More sharing options <span aria-hidden="true">↗</span></button><p class="article-share-notice" id="native-share-status" aria-live="polite" hidden></p></dialog>`);
+    const articleShareDialog = $('#article-share-dialog');
+    $('#open-share').addEventListener('click', () => articleShareDialog.showModal());
+    $('#close-article-share').addEventListener('click', () => articleShareDialog.close());
+    articleShareDialog.addEventListener('click', event => {
+      if (event.target !== articleShareDialog) return;
+      const bounds = articleShareDialog.getBoundingClientRect();
+      if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) articleShareDialog.close();
+    });
+    $('#native-share').addEventListener('click', async () => {
+      try { await navigator.share({ title: shareTitle, url: articleUrl }); articleShareDialog.close(); }
+      catch (error) {
+        if (error.name === 'AbortError') return;
+        const notice = $('#native-share-status');
+        notice.hidden = false;
+        notice.textContent = 'Your browser could not open its sharing options. Choose a platform above instead.';
+      }
+    });
   }
 }
 
