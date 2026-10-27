@@ -99,10 +99,16 @@ function filmTable(title, films) {
 }
 
 if (currentPage === 'article') {
-  const story = stories.find(story => story.slug === params.get('story'));
+  const story = stories.find(story => story.slug === (document.body.dataset.story || params.get('story')));
   if (!story) {
     document.title = 'Story Not Found — SUBTEXT';
     $('#main').innerHTML = '<div class="wrap section not-found"><p class="eyebrow">OUT OF FRAME</p><h1>We couldn’t find<br><em>that story.</em></h1><p>Explore the inaugural issue to find your next read.</p><a class="button button-red" href="index.html#stories">Back to the stories ↗</a></div>';
+  } else if (!document.body.dataset.story) {
+    // Keep previously published query links working, while sharing a page
+    // whose initial HTML includes this story's social preview metadata.
+    const permalink = new URL(storyUrl(story.slug), document.baseURI);
+    permalink.hash = location.hash;
+    location.replace(permalink.href);
   } else {
     document.title = `${story.title} — SUBTEXT`;
     $('meta[name="description"]').content = story.excerpt;
@@ -138,11 +144,11 @@ if (currentPage === 'article') {
     });
     $('#share-story').addEventListener('click', async event => {
       const button = event.currentTarget;
-      try { await navigator.clipboard.writeText(location.href); button.textContent = 'Link copied ✓'; $('#share-status').textContent = 'Story link copied to clipboard.'; }
+      try { await navigator.clipboard.writeText(articleUrl); button.textContent = 'Link copied ✓'; $('#share-status').textContent = 'Story link copied to clipboard.'; }
       catch { $('#share-status').textContent = 'Copy the address from your browser to share this story.'; button.textContent = 'Copy the browser address'; }
     });
 
-    const articleUrl = new URL(storyUrl(story.slug), location.href).href;
+    const articleUrl = new URL(storyUrl(story.slug), document.baseURI).href;
     const shareTitle = `${story.title} — SUBTEXT`;
     const encodedUrl = encodeURIComponent(articleUrl);
     const encodedTitle = encodeURIComponent(shareTitle);

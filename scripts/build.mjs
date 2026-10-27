@@ -1,11 +1,26 @@
-import { cp, mkdir, readdir, rm } from 'node:fs/promises';
+import { cp, mkdir, readdir, readFile, writeFile, rm } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
+import { generateStoryPages } from './story-pages.mjs';
 const root = path.resolve(import.meta.dirname, '..');
 const destination = path.join(root, 'dist');
 // The destination is fixed inside this repository.
 await rm(destination, { recursive: true, force: true });
 await mkdir(destination, { recursive: true });
 for (const entry of await readdir(path.join(root, 'public'))) {
+  if (entry === 'stories') continue; // Generate fresh story HTML from the current content.
   await cp(path.join(root, 'public', entry), path.join(destination, entry), { recursive: true });
 }
-console.log('Built static website in dist/');
+const fingerprint = content => createHash('sha256').update(content).digest('hex').slice(0, 12);
+const dataVersion = fingerprint(await readFile(path.join(destination, 'data.js')));
+const appPath = path.join(destination, 'app.js');
+const app = (await readFile(appPath, 'utf8')).replace("from './data.js';", `from './data.js?v=${dataVersion}';`);
+await writeFile(appPath, app, 'utf8');
+const versions = { appVersion: fingerprint(app), styleVersion: fingerprint(await readFile(path.join(destination, 'styles.css'))) };
+for (const file of (await readdir(destination)).filter(file => file.endsWith('.html'))) {
+  const filePath = path.join(destination, file);
+  const html = (await readFile(filePath, 'utf8')).replaceAll('src="app.js"', `src="app.js?v=${versions.appVersion}"`).replaceAll('href="styles.css"', `href="styles.css?v=${versions.styleVersion}"`);
+  await writeFile(filePath, html, 'utf8');
+}
+await generateStoryPages(destination, versions);
+console.log('Built static website and 15 preview-ready article pages in dist/');

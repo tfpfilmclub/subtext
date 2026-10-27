@@ -122,5 +122,7 @@ export const activities = [
 ];
 
 export const image = id => `assets/images/${id}.webp`;
-export const storyUrl = slug => `article.html?story=${encodeURIComponent(slug)}`;
+export const storyUrl = slug => `stories/${encodeURIComponent(slug)}/`;
+export const socialImage = slug => `assets/social/${encodeURIComponent(slug)}.jpg`;
+export const socialImageSource = story => story.slug === 'aaron-sorkin' ? 'p01-02' : story.image;
 export const pageUrl = page => `issue.html?page=${page}`;

@@ -17,6 +17,7 @@ Open the Local URL printed by the server, normally `http://127.0.0.1:4173`.
 ```sh
 npm run check
 npm run build
+npm run check:social
 ```
 
 The build copies the ready-to-serve website into `dist/`. All URLs are relative, so the website also works below GitHub Pages’ `/subtext/` path.
@@ -44,6 +45,20 @@ The build copies the ready-to-serve website into `dist/`. All URLs are relative,
 - `content/image-manifest.json`: source-page mapping, dimensions, and SHA-256 checksums for the originals.
 - `public/editions/`: the original, unchanged PDF.
 - `public/assets/fonts/`: self-hosted Anton, DM Sans, and Newsreader typefaces.
+- `public/assets/social/`: story-specific 1200 × 630 JPEGs for social previews.
+- `scripts/story-pages.mjs`: generates each story’s HTML with its headline, description, canonical URL, and Open Graph/X image metadata available before JavaScript runs.
+
+Articles use dedicated URLs such as `stories/piku/`. Copy link, social share links, search results, and story cards use these permalinks. Previously published `article.html?story=...` links continue to open the matching story. `npm run dev` prepares the article pages for local use; `npm run build` writes fresh pages to `dist/stories/` and versions the scripts to avoid stale navigation code after publishing.
+
+After changing a story’s artwork, regenerate its social JPEG with Pillow and Node.js, then build and validate:
+
+```sh
+python scripts/prepare_social_images.py
+npm run build
+npm run check:social
+```
+
+The image preparation command accepts an optional absolute Node executable path. Landscape stills fill the preview; portraits and posters preserve their full composition. The Aaron Sorkin interview, which has no separate story photograph, uses the magazine cover.
 
 English copy is lightly edited for spelling, capitalization, and extraction artifacts. Bangla text that could not be reliably extracted is preserved in its original printed form, rather than publishing corrupted characters or an unverified transcription. Some descriptive English titles introduce those original-language features; the original titles remain on their source pages. The Piku article’s complete paragraphs are reproduced; its unfinished final print sentence is preserved only in the original layout.
 
