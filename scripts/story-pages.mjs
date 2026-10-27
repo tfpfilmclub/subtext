@@ -1,6 +1,8 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { stories, image, socialImage, storyUrl } from '../public/data.js';
+import { renderProse, transcriptIntro } from '../public/article-render.js';
+import { enhancedImages } from '../public/image-enhancements.js';
 
 export const siteOrigin = 'https://tfpfilmclub.github.io/subtext/';
 const escapeHtml = value => String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
@@ -14,11 +16,10 @@ export function renderStoryPage(story, { appVersion = '', styleVersion = '' } = 
   const imageAlt = escapeHtml(`${story.title} — artwork from SUBTEXT Issue 01`);
   const appScript = `app.js${appVersion ? `?v=${appVersion}` : ''}`;
   const stylesheet = `styles.css${styleVersion ? `?v=${styleVersion}` : ''}`;
-  const paragraphs = story.body || [story.intro];
-  const prose = paragraphs.map(block => typeof block === 'string' ? `<p>${escapeHtml(block)}</p>` : `<h2 class="prose-heading">${escapeHtml(block.heading)}</h2>`).join('\n');
+  const prose = renderProse(story, escapeHtml);
   // This initial content is readable without JavaScript. The existing app
   // enhances the same page with saving, sharing, and the rest of the issue.
-  const fallback = `<div class="wrap article-top"><nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">SUBTEXT</a><span>/</span><a href="index.html#stories">Issue 01</a></nav><header class="article-header"><span class="eyebrow">${escapeHtml(story.category)} / ${escapeHtml(story.language)} / ISSUE 01</span><h1>${title}</h1>${story.subtitle ? `<p class="article-subtitle">${escapeHtml(story.subtitle)}</p>` : ''}<p class="article-deck">${description}</p><div class="article-meta">${escapeHtml(story.author)} · January 2026</div></header>${story.noImage ? '' : `<img class="article-hero-image ${story.portrait ? 'portrait' : ''} ${story.tone || ''}" src="${image(story.image)}" alt="${imageAlt}" width="1280" height="560">`}<div class="article-body-layout"><aside class="article-margin">FROM THE INAUGURAL ISSUE<br>Volume 01 / Issue 01</aside><div class="prose">${prose}<p><a href="issue.html?page=${story.page}">Read the original print layout, starting on page ${story.page}.</a></p></div></div></div>`;
+  const fallback = `<div class="wrap article-top"><nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">SUBTEXT</a><span>/</span><a href="index.html#stories">Issue 01</a></nav><header class="article-header"><span class="eyebrow">${escapeHtml(story.category)} / ${escapeHtml(story.language)} / ISSUE 01</span><h1${story.language === 'বাংলা' && /[\u0980-\u09ff]/.test(story.title) ? ' lang="bn"' : ''}>${title}</h1>${story.subtitle ? `<p class="article-subtitle">${escapeHtml(story.subtitle)}</p>` : ''}<p class="article-deck">${description}</p><div class="article-meta"><span${story.transcript ? ' lang="bn"' : ''}>${escapeHtml(story.author)}</span> · January 2026</div></header>${story.noImage ? '' : `<img class="article-hero-image ${enhancedImages[story.image] ? 'enhanced' : ''} ${story.portrait ? 'portrait' : ''} ${story.tone || ''}" src="${image(story.image)}" alt="${imageAlt}" width="1280" height="560">${enhancedImages[story.image] ? `<p class="article-image-caption">AI-upscaled for web · <a href="${enhancedImages[story.image].original}" target="_blank" rel="noopener">Compare original ↗</a></p>` : ''}`}<div class="article-body-layout"><aside class="article-margin">FROM THE INAUGURAL ISSUE<br>Volume 01 / Issue 01</aside><div>${transcriptIntro(story, escapeHtml)}<div class="prose"${story.transcript ? ' lang="bn"' : ''}>${prose}<p><a href="issue.html?page=${story.page}">Read the original print layout, starting on page ${story.page}.</a></p></div></div></div></div>`;
 
   return `<!doctype html>
 <html lang="en" prefix="og: https://ogp.me/ns# article: https://ogp.me/ns/article#">

@@ -1,4 +1,6 @@
 import { articleText } from './article-text.js';
+import { banglaArticles } from './bangla-articles.js';
+import { enhancedImages } from './image-enhancements.js';
 
 export const issue = {
   title: 'The Inaugural Issue', volume: 1, number: 1, date: 'January 2026',
@@ -66,6 +68,14 @@ export const stories = [
 ];
 
 for (const story of stories) if (articleText[story.slug]) story.body = articleText[story.slug];
+for (const story of stories) {
+  const transcript = banglaArticles[story.slug];
+  if (transcript) {
+    Object.assign(story, transcript, { transcript: `text/${story.slug}.txt` });
+    // Excerpts remain the issue's editorial summaries; the full text is Bangla.
+    delete story.intro;
+  }
+}
 
 export const professorFilms = [
   ['Aftersun', 'p16-01'], ['Winter’s Bone', 'p16-02'], ['Whiplash', 'p16-03'], ['The Savages', 'p16-04'],
@@ -121,7 +131,7 @@ export const activities = [
   ['p35-05', 'The Salt in Our Waters', 'A screening and conversation with Rezwan Shahriar Sumit.'],
 ];
 
-export const image = id => `assets/images/${id}.webp`;
+export const image = id => enhancedImages[id]?.src || `assets/images/${id}.webp`;
 export const storyUrl = slug => `stories/${encodeURIComponent(slug)}/`;
 export const socialImage = slug => `assets/social/${encodeURIComponent(slug)}.jpg`;
 export const socialImageSource = story => story.slug === 'aaron-sorkin' ? 'p01-02' : story.image;

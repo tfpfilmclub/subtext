@@ -60,9 +60,9 @@ npm run check:social
 
 The image preparation command accepts an optional absolute Node executable path. Landscape stills fill the preview; portraits and posters preserve their full composition. The Aaron Sorkin interview, which has no separate story photograph, uses the magazine cover.
 
-English copy is lightly edited for spelling, capitalization, and extraction artifacts. Bangla text that could not be reliably extracted is preserved in its original printed form, rather than publishing corrupted characters or an unverified transcription. Some descriptive English titles introduce those original-language features; the original titles remain on their source pages. The Piku article’s complete paragraphs are reproduced; its unfinished final print sentence is preserved only in the original layout.
+English copy is lightly edited for spelling, capitalization, and extraction artifacts. All six Bangla articles have typed reading editions, visually checked against their 13 source pages; the president’s Bangla message is also typed on the About page. Only clear spelling, OCR, spacing and punctuation errors are corrected. Two unclear names are explicitly marked rather than guessed. Original print pages remain available. Reviewed UTF-8 sources are in `content/bangla/`, with an editorial record in `content/bangla/PROOFREADING.md`. `npm run build` regenerates `public/bangla-articles.js` and seven downloadable text files. The Piku article’s complete paragraphs are reproduced; its unfinished final print sentence is preserved only in the original layout.
 
-The film stills and photographs retain their original detail. Web copies are converted from print color modes where necessary, without AI regeneration, fabricated detail, or destructive sharpening. Subtle display contrast is applied in the stylesheet. Downloadable originals are unchanged after extraction.
+All 78 extracted originals and their initial WebP copies are retained unchanged. Four low-resolution story images have separate AI-upscaled variants in `public/assets/enhanced/`; article captions identify these and link to the source image for comparison. Upscaling estimates detail rather than recovering new source information. The prompt and provenance notes are recorded in `content/bangla/PROOFREADING.md`, and `public/image-enhancements.js` maps the selected variants. Sharing JPEGs use the selected web artwork. Bangla reading uses self-hosted Noto Serif Bengali under its included SIL Open Font License.
 
 For extraction, install Python’s `pypdf` and `Pillow`. Poppler is required to render the pages:
 
@@ -80,3 +80,5 @@ The GitHub Actions workflow in `.github/workflows/pages.yml` verifies content, b
 For another static host, publish the contents of `dist/`. No server, database, or paid service is required.
 
 Magazine text and imagery belong to their respective creators and rights holders. Their inclusion here follows the supplied magazine; this repository does not grant a new license to the magazine or the third-party film artwork. Print design credits are retained on the About page.
+
+Run `npm run check:bangla` after building to verify complete typed content in initial HTML, text downloads, disclosed uncertainties, font files, and upscale variants. Local search includes article bodies and normalizes Bengali Unicode.

@@ -57,7 +57,7 @@ for (const story of stories) {
   assert.equal(canonicalTag.href, canonical);
   assert(head.indexOf('<meta charset="utf-8">') < head.indexOf('<title>'));
   assert.equal(decodeHtml(/<title>([^<]+)<\/title>/.exec(head)[1]), `${story.title} — SUBTEXT`);
-  assert.equal(decodeHtml(/<h1>([^<]+)<\/h1>/.exec(html)[1]), story.title, 'Initial HTML must contain the actual story headline without executing scripts');
+  assert.equal(decodeHtml(/<h1(?:\s[^>]*)?>([^<]+)<\/h1>/.exec(html)[1]), story.title, 'Initial HTML must contain the actual story headline without executing scripts');
   assert(html.includes(`data-story="${story.slug}"`));
   assert(!head.includes('Read — SUBTEXT'));
 

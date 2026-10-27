@@ -33,6 +33,8 @@ jobs:
         run: npm run build
       - name: Verify article sharing previews
         run: npm run check:social
+      - name: Verify Bangla reading editions
+        run: npm run check:bangla
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload the website

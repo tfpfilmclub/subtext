@@ -5,10 +5,12 @@
   "type": "module",
   "description": "SUBTEXT — A film magazine by film students. TFP Film Club, University of Dhaka.",
   "scripts": {
+    "prebuild": "node scripts/prepare-bangla.mjs",
     "dev": "node scripts/serve.mjs",
     "build": "node scripts/build.mjs",
     "check": "node scripts/check.mjs",
-    "check:social": "node scripts/check-social.mjs"
+    "check:social": "node scripts/check-social.mjs",
+    "check:bangla": "node scripts/check-bangla.mjs"
   },
   "engines": { "node": ">=20.11.0" }
 }
