@@ -1,0 +1,13 @@
+{
+  "name": "subtext-film-magazine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "SUBTEXT — A film magazine by film students. TFP Film Club, University of Dhaka.",
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs"
+  },
+  "engines": { "node": ">=20.11.0" }
+}
