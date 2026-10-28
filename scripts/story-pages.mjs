@@ -1,9 +1,10 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { stories, image, socialImage, storyUrl, authorUrl } from '../public/data.js';
+import { stories, socialImage, storyUrl, authorUrl } from '../public/data.js';
 import { renderProse, transcriptIntro } from '../public/article-render.js';
 import { readingLabel } from '../public/reading.js';
-import { enhancedImages } from '../public/image-enhancements.js';
+import { renderArticleMedia } from '../public/article-media.js';
+import { suppliedImages } from '../public/supplied-images.js';
 
 export const siteOrigin = 'https://tfpfilmclub.github.io/subtext/';
 const escapeHtml = value => String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
@@ -14,13 +15,13 @@ export function renderStoryPage(story, { appVersion = '', styleVersion = '' } = 
   const description = escapeHtml(story.excerpt);
   const canonical = canonicalStoryUrl(story);
   const preview = new URL(socialImage(story.slug), siteOrigin).href;
-  const imageAlt = escapeHtml(`${story.title} — artwork from SUBTEXT Issue 01`);
+  const imageAlt = escapeHtml(story.slug === 'professors-pick' ? 'Rezwan Shahriar Sumit, curator of Professor’s Pick' : suppliedImages[story.image]?.alt || `${story.title} — artwork from SUBTEXT Issue 01`);
   const appScript = `app.js${appVersion ? `?v=${appVersion}` : ''}`;
   const stylesheet = `styles.css${styleVersion ? `?v=${styleVersion}` : ''}`;
   const prose = renderProse(story, escapeHtml);
   // This initial content is readable without JavaScript. The existing app
   // enhances the same page with saving, sharing, and the rest of the issue.
-  const fallback = `<div class="wrap article-top"><nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">SUBTEXT</a><span>/</span><a href="index.html#stories">Issue 01</a></nav><header class="article-header"><span class="eyebrow">${escapeHtml(story.category)} / ${escapeHtml(story.language)} / ISSUE 01</span><h1${story.language === 'বাংলা' && /[\u0980-\u09ff]/.test(story.title) ? ' lang="bn"' : ''}>${title}</h1>${story.subtitle ? `<p class="article-subtitle">${escapeHtml(story.subtitle)}</p>` : ''}<p class="article-deck">${description}</p><div class="article-meta"><a class="author-link" href="${authorUrl(story.authorId)}"${story.transcript ? ' lang="bn"' : ''}>${escapeHtml(story.author)}</a> · January 2026 · <span class="article-reading-time"${story.language === 'বাংলা' ? ' lang="bn"' : ''}>${escapeHtml(readingLabel(story,true))}</span></div></header>${story.noImage ? '' : `<img class="article-hero-image ${enhancedImages[story.image] ? 'enhanced' : ''} ${story.portrait ? 'portrait' : ''} ${story.tone || ''}" src="${image(story.image)}" alt="${imageAlt}" width="1280" height="560">${enhancedImages[story.image] ? `<p class="article-image-caption">AI-upscaled for web · <a href="${enhancedImages[story.image].original}" target="_blank" rel="noopener">Compare original ↗</a></p>` : ''}`}<div class="article-body-layout"><aside class="article-margin">FROM THE INAUGURAL ISSUE<br>Volume 01 / Issue 01</aside><div>${transcriptIntro(story, escapeHtml)}<div class="prose"${story.transcript ? ' lang="bn"' : ''}>${prose}<p><a href="issue.html?page=${story.page}">Read the original print layout, starting on page ${story.page}.</a></p></div></div></div></div>`;
+  const fallback = `<div class="wrap article-top"><nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">SUBTEXT</a><span>/</span><a href="index.html#stories">Issue 01</a></nav><header class="article-header"><span class="eyebrow">${escapeHtml(story.category)} / ${escapeHtml(story.language)} / ISSUE 01</span><h1${story.language === 'বাংলা' && /[\u0980-\u09ff]/.test(story.title) ? ' lang="bn"' : ''}>${title}</h1>${story.subtitle ? `<p class="article-subtitle">${escapeHtml(story.subtitle)}</p>` : ''}<p class="article-deck">${description}</p><div class="article-meta"><a class="author-link" href="${authorUrl(story.authorId)}"${story.transcript ? ' lang="bn"' : ''}>${escapeHtml(story.author)}</a> · January 2026 · <span class="article-reading-time"${story.language === 'বাংলা' ? ' lang="bn"' : ''}>${escapeHtml(readingLabel(story,true))}</span></div></header>${renderArticleMedia(story, escapeHtml)}<div class="article-body-layout"><aside class="article-margin">FROM THE INAUGURAL ISSUE<br>Volume 01 / Issue 01</aside><div>${transcriptIntro(story, escapeHtml)}<div class="prose"${story.transcript ? ' lang="bn"' : ''}>${prose}<p><a href="issue.html?page=${story.page}">Read the original print layout, starting on page ${story.page}.</a></p></div></div></div></div>`;
 
   return `<!doctype html>
 <html lang="en" prefix="og: https://ogp.me/ns# article: https://ogp.me/ns/article#">

@@ -5,6 +5,8 @@ import { readingStats, readingLabel } from '../public/reading.js';
 assert.deepEqual(readingStats('একটি গল্প। Another story!'),{words:4,minutes:1});
 assert.equal(readingStats(Array(221).fill('word').join(' ')).minutes,2);
 assert.equal(readingStats(Array(181).fill('গল্প').join(' ')).minutes,2);
+assert.equal(readingLabel({language:'বাংলা',reading:{minutes:7,words:1200}}),'৭ মিনিটের পাঠ');
+assert.equal(readingLabel({language:'English',reading:{minutes:7,words:1200}}),'7 min read');
 for(const story of stories) {
   assert(story.reading.words > 0 && story.reading.minutes >= 1);
   const article=await readFile(`dist/stories/${story.slug}/index.html`,'utf8');

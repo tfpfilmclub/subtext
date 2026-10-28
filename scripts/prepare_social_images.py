@@ -12,7 +12,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 node = sys.argv[1] if len(sys.argv) > 1 else 'node'
-script = "import { stories, image, socialImageSource } from './public/data.js'; process.stdout.write(JSON.stringify(stories.map(story => ({ slug: story.slug, source: image(socialImageSource(story)), portrait: story.portrait, tone: story.tone }))));"
+script = "import { stories, image, socialImageSource, socialImage } from './public/data.js'; process.stdout.write(JSON.stringify(stories.map(story => ({ slug: story.slug, source: image(socialImageSource(story)), destination: socialImage(story.slug), portrait: story.portrait, fit: story.fit, tone: story.tone }))));"
 stories = json.loads(subprocess.check_output([node, '--input-type=module', '-e', script], cwd=ROOT, encoding='utf-8'))
 destination = ROOT / 'public/assets/social'
 destination.mkdir(parents=True, exist_ok=True)
@@ -22,10 +22,10 @@ for story in stories:
     canvas = Image.new('RGB', (1200, 630), background)
     # Preserve faces and poster composition. Landscape stills fill the card;
     # portraits and covers retain their full image against the magazine palette.
-    if story.get('portrait') or source.height > source.width:
+    if story.get('portrait') or story.get('fit') == 'contain' or source.height > source.width:
         picture = ImageOps.contain(source, (1120, 590), Image.Resampling.LANCZOS)
     else:
         picture = ImageOps.fit(source, (1200, 630), Image.Resampling.LANCZOS)
     canvas.paste(picture, ((1200 - picture.width) // 2, (630 - picture.height) // 2), picture)
-    canvas.save(destination / f"{story['slug']}.jpg", 'JPEG', quality=90, optimize=True, progressive=True)
+    canvas.save(ROOT / 'public' / story['destination'], 'JPEG', quality=90, optimize=True, progressive=True)
 print(f'Prepared {len(stories)} story-specific JPEG previews at 1200 x 630.')

@@ -2,8 +2,9 @@ import { stories, professorFilms, foreignFilms, bengaliFilms, resources, activit
 import { renderStoryCard } from './story-card.js';
 import { readingLabel } from './reading.js';
 import { mountCommunity } from './community.js';
-import { enhancedImages } from './image-enhancements.js';
 import { renderProse, transcriptIntro } from './article-render.js';
+import { renderArticleMedia } from './article-media.js';
+import { suppliedImages } from './supplied-images.js';
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -51,6 +52,7 @@ const imageDescriptions = {
   'p36-01': 'Second TFP Creative Excellence Awards 2025 artwork', 'p36-02': 'From Classroom to Cosmos artwork',
 };
 for (const film of professorFilms) imageDescriptions[film.image] = `${film.title} poster`;
+for (const [id, record] of Object.entries(suppliedImages)) imageDescriptions[id] = record.alt;
 
 function posterCard(film, index) {
   return `<a class="poster" href="archive.html?image=${film.image}" id="film-${film.image}"><div class="poster-image"><img src="${image(film.image)}" alt="${escape(film.title)} poster" loading="lazy" width="443" height="618"></div><span class="poster-number">${pad(index + 1)} / PROFESSOR’S PICK</span><h3>${escape(film.title)}</h3></a>`;
@@ -113,7 +115,7 @@ if (currentPage === 'article') {
     document.title = `${story.title} — SUBTEXT`;
     $('meta[name="description"]').content = story.excerpt;
     const native = !story.body && !['professors-pick', 'underrated-jewels', 'screen-teaches-screen', 'club-at-a-glance'].includes(story.slug);
-    const hero = story.noImage || story.slug === 'professors-pick' ? '' : `<img class="article-hero-image ${enhancedImages[story.image] ? 'enhanced' : ''} ${story.portrait ? 'portrait' : ''} ${story.tone || ''}" src="${image(story.image)}" alt="${escape(imageDescriptions[story.image] || story.title)}" width="1280" height="560"><p class="article-image-caption">${escape(imageDescriptions[story.image] || story.title)} · From SUBTEXT, Volume 1, Issue 1${enhancedImages[story.image] ? ` · AI-upscaled for web · <a href="${enhancedImages[story.image].original}" target="_blank" rel="noopener">Compare original ↗</a>` : ''}</p>`;
+    const hero = renderArticleMedia(story, escape, imageDescriptions[story.image] || story.title);
     const prose = renderProse(story, escape);
     $('#main').innerHTML = `<div class="wrap article-top"><nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">SUBTEXT</a><span>/</span><a href="index.html#stories">Issue 01</a><span>/</span><span>${escape(story.category)}</span></nav><header class="article-header"><span class="eyebrow">${escape(story.category.toUpperCase())} <span aria-hidden="true"> / </span> ${escape(story.language)} <span aria-hidden="true"> / </span> ISSUE 01</span><h1${story.language === 'বাংলা' && /[\u0980-\u09ff]/.test(story.title) ? ' lang="bn"' : ''}>${escape(story.title)}</h1>${story.subtitle ? `<p class="article-subtitle">${escape(story.subtitle)}</p>` : ''}<p class="article-deck">${escape(story.excerpt)}</p><div class="article-meta"><div><a class="author-link" href="${authorUrl(story.authorId)}"${story.transcript ? ' lang="bn"' : ''}>${escape(story.author)}</a>${story.role ? `<small>${escape(story.role)}</small>` : ''}<small>January 2026 · ${story.page === story.end ? `Page ${story.page}` : `Pages ${story.page}–${story.end}`}</small><small class="article-reading-time"${story.language === 'বাংলা' ? ' lang="bn"' : ''}>${escape(readingLabel(story, true))}</small></div><div class="article-actions"><button class="bookmark-button" id="save-story" aria-pressed="false">Save for later ＋</button><button class="bookmark-button" id="share-story">Copy link ↗</button><span class="sr-only" id="share-status" aria-live="polite"></span></div></div></header>${hero}<div class="article-body-layout"><aside class="article-margin"><span class="eyebrow">FROM THE<br>INAUGURAL ISSUE</span><p>Volume 01 / Issue 01<br>January 2026<br>TFP Film Club</p></aside><div>${transcriptIntro(story, escape)}<div class="prose"${story.transcript ? ' lang="bn"' : ''}>${prose}${story.secondaryImage ? `<figure><img src="${image(story.secondaryImage)}" alt="${escape(imageDescriptions[story.secondaryImage])}" loading="lazy"><figcaption>From the original issue of SUBTEXT.</figcaption></figure>` : ''}</div>${native || story.body ? `<div class="print-callout"><span class="eyebrow">ON THE PAGE</span><p>${native ? 'Continue with the complete article in its original print layout below.' : 'Read this piece as it appeared in the inaugural issue.'}</p><a class="button button-outline" href="${pageUrl(story.page)}">Open the issue reader <span aria-hidden="true">↗</span></a>${story.note ? `<p class="print-note">${escape(story.note)}</p>` : ''}</div>` : ''}</div></div><div id="article-special"></div><div id="article-community"></div>${originalPages(story)}</div><section class="article-bottom"><div class="wrap"><span class="eyebrow">KEEP LOOKING</span><h2>Also in this issue<span class="red">.</span></h2><div class="related-grid">${stories.filter(item => item.slug !== story.slug && ['tanim-noor', 'piku', 'guerrilla', 'dr-strangelove'].includes(item.slug)).slice(0, 3).map(storyCard).join('')}</div></div></section>`;
 

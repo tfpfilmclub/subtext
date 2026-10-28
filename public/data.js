@@ -2,6 +2,7 @@ import { articleText } from './article-text.js';
 import { banglaArticles } from './bangla-articles.js';
 import { enhancedImages } from './image-enhancements.js';
 import { readingStats } from './reading.js';
+import { suppliedImages } from './supplied-images.js';
 
 export const issue = {
   title: 'The Inaugural Issue', volume: 1, number: 1, date: 'January 2026',
@@ -30,19 +31,19 @@ export const stories = [
       'What truly changed my life after watching Guerrilla was my perception of freedom and responsibility. The film forced me to confront how casually we often treat independence, forgetting the individuals who paid for it with their lives, families, and futures. It made history feel personal, not abstract. I began to see freedom as something fragile, sustained not by slogans but by courage and ethical choices made under extreme pressure.',
       'Guerrilla also reshaped my understanding of women’s roles in history. By centering female fighters and supporters, the film challenges traditional narratives and demands recognition for their often-erased contributions. Long after the credits rolled, Guerrilla left me more aware, more grateful, and more committed to remembering that freedom is not inherited—it is earned, defended, and remembered through stories like these.'
     ], secondaryImage: 'p18-02' },
-  { slug: 'dr-strangelove', title: 'The Role of Scenic Design in Dr. Strangelove', category: 'Essays', language: 'English', author: 'Bikromaditto', role: 'Former Organizing Secretary, TFP Film Club', page: 10, end: 11, image: 'p11-02',
+  { slug: 'dr-strangelove', title: 'The Role of Scenic Design in Dr. Strangelove', category: 'Essays', language: 'English', author: 'Bikromaditto', role: 'Former Organizing Secretary, TFP Film Club', page: 10, end: 11, image: 'strangelove-war-room', previewVersion: 'war-room', fit: 'contain',
     excerpt: 'Inside Kubrick’s war room: how sets, props, and scale give a black comedy its unsettling power.',
     intro: 'Bikromaditto considers the three major settings of Stanley Kubrick’s Dr. Strangelove: Burpelson Air Force Base, the B-52 bomber, and the War Room. The essay reads their sets and props as a visual language of power, absurdity, and nuclear anxiety.' },
   { slug: 'dear-mother', title: 'Community, Cinema & Dear Mother', category: 'Essays', language: 'বাংলা', author: 'S.K. Shuvo Sadique', page: 9, end: 9, image: 'p09-02',
     excerpt: 'On making the first Mro-language film and imagining a cinema rooted in community.',
     intro: 'S.K. Shuvo Sadique writes about cinema, collective filmmaking, and his first Mro-language film, Dear Mother. Read the original Bangla essay in its printed form.' },
-  { slug: 'aaron-sorkin', title: 'আরন সরকিন: সংলাপ এবং চরিত্র নির্মাণ', category: 'Interviews', language: 'বাংলা', author: 'মোঃ রিয়াজুল হোসেন', role: 'Bangla translation', page: 13, end: 14, image: 'p10-01', noImage: true,
+  { slug: 'aaron-sorkin', title: 'আরন সরকিন: সংলাপ এবং চরিত্র নির্মাণ', category: 'Interviews', language: 'বাংলা', author: 'মোঃ রিয়াজুল হোসেন', role: 'Bangla translation', page: 13, end: 14, image: 'aaron-sorkin-collage', previewVersion: 'collage', fit: 'contain',
     excerpt: 'A translated conversation with Aaron Sorkin about intention, obstacles, and the craft of dialogue.',
     intro: 'Aaron Sorkin discusses dialogue and characterization in a conversation with David Brooks. Read the selected interview in its original Bangla magazine layout.' },
-  { slug: 'underrated-jewels', title: 'Underrated Jewels', category: 'Watchlists', language: 'English', author: 'SUBTEXT', page: 15, end: 15, image: 'p15-02',
+  { slug: 'underrated-jewels', title: 'Underrated Jewels', category: 'Watchlists', language: 'English', author: 'SUBTEXT', page: 15, end: 15, image: 'salt-in-our-waters', previewVersion: 'salt', fit: 'contain',
     excerpt: 'From Wings of Desire to The Salt in Our Waters: a watchlist for the endlessly curious.',
     intro: 'A selection from the inaugural issue: international discoveries alongside a collection of Bengali-language films.' },
-  { slug: 'professors-pick', title: 'Professor’s Pick', category: 'Watchlists', language: 'English', author: 'Rezwan Shahriar Sumit', page: 16, end: 17, image: 'p16-01',
+  { slug: 'professors-pick', title: 'Professor’s Pick', category: 'Watchlists', language: 'English', author: 'Rezwan Shahriar Sumit', page: 16, end: 17, image: 'p16-08', previewVersion: 'curator', portrait: true,
     excerpt: 'Films to watch closely, return to, and carry into your own practice. Curated by Rezwan Shahriar Sumit.',
     intro: '“I’ve curated this list of films because each one profoundly impacted me upon my first viewing. These are career-launching titles (either the director’s or the actor’s) you may or may not have encountered yet. Regardless, I urge you to watch them, or rewatch them, with a keen eye.”' },
   { slug: 'shooting-memories', title: 'শুটিং, স্মৃতিচারণ এবং অন্যান্য', category: 'Essays', language: 'বাংলা', author: 'সিফাত রহমান', page: 19, end: 20, image: 'p19-02',
@@ -132,10 +133,13 @@ export const activities = [
   ['p35-05', 'The Salt in Our Waters', 'A screening and conversation with Rezwan Shahriar Sumit.'],
 ];
 
-export const image = id => enhancedImages[id]?.src || `assets/images/${id}.webp`;
+export const image = id => suppliedImages[id]?.src || enhancedImages[id]?.src || `assets/images/${id}.webp`;
 export const storyUrl = slug => `stories/${encodeURIComponent(slug)}/`;
-export const socialImage = slug => `assets/social/${encodeURIComponent(slug)}.jpg`;
-export const socialImageSource = story => story.slug === 'aaron-sorkin' ? 'p01-02' : story.image;
+export const socialImage = slug => {
+  const version = stories.find(story => story.slug === slug)?.previewVersion;
+  return `assets/social/${encodeURIComponent(slug)}${version ? `-${version}` : ''}.jpg`;
+};
+export const socialImageSource = story => story.image;
 export const pageUrl = page => `issue.html?page=${page}`;
 export const authorUrl = id => `authors/${encodeURIComponent(id)}/`;
 

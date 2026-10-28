@@ -13,7 +13,7 @@ export function readingLabel(story, includeWords = false) {
   const { minutes, words } = story.reading;
   if (story.language === 'বাংলা') {
     const number = new Intl.NumberFormat('bn-BD');
-    return `পড়তে ${number.format(minutes)} মিনিট${includeWords ? ` · ${number.format(words)} শব্দ` : ''}`;
+    return `${number.format(minutes)} মিনিটের পাঠ${includeWords ? ` · ${number.format(words)} শব্দ` : ''}`;
   }
   return `${minutes} min read${includeWords ? ` · ${words.toLocaleString('en')} words` : ''}`;
 }
