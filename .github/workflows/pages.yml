@@ -35,6 +35,10 @@ jobs:
         run: npm run check:social
       - name: Verify Bangla reading editions
         run: npm run check:bangla
+      - name: Verify author profiles and reading times
+        run: npm run check:readers
+      - name: Verify shared reactions and comments
+        run: npm run check:community
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload the website

@@ -2,13 +2,14 @@ import { cp, mkdir, readdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { generateStoryPages } from './story-pages.mjs';
+import { generateAuthorPages } from './author-pages.mjs';
 const root = path.resolve(import.meta.dirname, '..');
 const destination = path.join(root, 'dist');
 // The destination is fixed inside this repository.
 await rm(destination, { recursive: true, force: true });
 await mkdir(destination, { recursive: true });
 for (const entry of await readdir(path.join(root, 'public'))) {
-  if (entry === 'stories') continue; // Generate fresh story HTML from the current content.
+  if (entry === 'stories' || entry === 'authors') continue;
   await cp(path.join(root, 'public', entry), path.join(destination, entry), { recursive: true });
 }
 const fingerprint = content => createHash('sha256').update(content).digest('hex').slice(0, 12);
@@ -29,4 +30,5 @@ for (const file of (await readdir(destination)).filter(file => file.endsWith('.h
   await writeFile(filePath, html, 'utf8');
 }
 await generateStoryPages(destination, versions);
+await generateAuthorPages(destination, versions);
 console.log('Built static website and 15 preview-ready article pages in dist/');

@@ -38,7 +38,7 @@ The original Bangla article titles and Bangla bylines were restored where the si
 
 ## Uncertain passages — no guessed completion
 
-- **p20, shooting memoir:** the makeup artist's name is not clear enough to establish confidently. The reading edition uses `[নামটি অস্পষ্ট]` and discloses this in the article and text download. The original remains one click away.
+- **p20, shooting memoir:** the user confirmed the makeup artist's name on 29 October 2026 as **বিন্তু আপু**. The reading edition and text download now include that name.
 - **p30, Panahi introduction:** the distributor's name appears as corrupt Bengali glyphs in the printed page. The reading edition uses `[মূল মুদ্রণে নামটি অস্পষ্ট]`; no distributor name has been inferred.
 - **p14:** the phrase “গিভিং ইউরসেলফ আ লিভ” is retained as printed. It was not expanded or retranslated by conjecture.
 - **p19:** the unusual “শুট বাদ তো যাবেই” wording is retained rather than silently substituting “ক্লাস”. The author's separate approximately 14-day and 13-day recollections are both retained.

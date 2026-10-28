@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import { DatabaseSync } from 'node:sqlite';
+import { readFile,readdir } from 'node:fs/promises';
+import { handleCommunity } from '../services/community/community-api.mjs';
+const sqlite=new DatabaseSync(':memory:');
+for(const file of (await readdir('services/community/drizzle')).filter(file=>file.endsWith('.sql')).sort())sqlite.exec(await readFile(`services/community/drizzle/${file}`,'utf8'));
+const db={prepare(sql){const statement=sqlite.prepare(sql);let args=[];return {bind(...values){args=values;return this;},async first(){return statement.get(...args)||null;},async all(){return {results:statement.all(...args)};},async run(){return statement.run(...args);}};}};
+const env={DB:db,SESSION_SECRET:'test-only-secret-not-a-production-credential',OWNER_ID:'owner'};
+async function call(path,{method='GET',token,body,origin='https://tfpfilmclub.github.io',owner=false}={}) {
+ const response=await handleCommunity(new Request(`https://community.test${path}`,{method,headers:{Origin:origin,'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{ }),...(owner?{'oai-authenticated-user-id':'owner'}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})}),env);
+ return {status:response.status,data:response.status===204?null:await response.json(),headers:response.headers};
+}
+const session=async()=>{const result=await call('/api/session',{method:'POST',body:{}});assert.equal(result.status,200);return result.data.token;};
+const first=await session(), second=await session();
+assert.equal((await call('/api/articles/piku',{origin:'https://evil.test'})).status,403);
+assert.equal((await call('/api/articles/unknown')).status,404);
+assert.equal((await call('/api/articles/piku',{method:'POST',token:'forged',body:{reaction:'love'}})).status,401);
+assert.equal((await call('/api/articles/piku',{method:'POST',token:first,body:{reaction:'love'}})).data.reactions.love,1);
+assert.equal((await call('/api/articles/piku',{method:'POST',token:first,body:{reaction:'love'}})).data.reactions.love,1,'Repeated request must not double count');
+let shared=await call('/api/articles/piku',{token:second});assert.equal(shared.data.reactions.love,1);assert.equal(shared.data.myReaction,null);
+shared=await call('/api/articles/piku',{method:'POST',token:first,body:{reaction:'like'}});assert.deepEqual(shared.data.reactions,{like:1,love:0});
+assert.deepEqual((await call('/api/articles/piku',{method:'POST',token:first,body:{reaction:null}})).data.reactions,{like:0,love:0});
+assert.equal((await call('/api/comments',{method:'POST',token:first,body:{story:'piku',name:'Reader',text:'Spam',website:'bot'}})).status,400);
+const posted=await call('/api/comments',{method:'POST',token:first,body:{story:'piku',name:'পাঠক',text:'ভালো লাগল। <script>alert(1)</script>'}});assert.equal(posted.status,201);
+shared=await call('/api/articles/piku',{token:second});assert.equal(shared.data.totalComments,1);assert.equal(shared.data.comments[0].name,'পাঠক');assert.equal(shared.data.comments[0].canDelete,false);assert(!('visitor' in shared.data.comments[0]));
+assert.equal((await call(`/api/comments/${posted.data.id}/delete`,{method:'POST',token:second,body:{}})).status,403);
+for(const token of [second,await session(),await session()])assert.equal((await call(`/api/comments/${posted.data.id}/report`,{method:'POST',token,body:{}})).status,200);
+assert.equal((await call('/api/articles/piku')).data.totalComments,0,'Reported comments should be hidden');
+assert.equal((await call('/api/moderation')).status,403);assert.equal((await call('/api/moderation',{owner:true})).data.comments[0].status,'hidden');
+assert.equal((await call(`/api/comments/${posted.data.id}/delete`,{method:'POST',owner:true,body:{}})).status,200);
+assert.equal((await call('/api/moderation',{owner:true})).data.comments.length,0);
+sqlite.close();
+console.log('Verified shared reaction counts, idempotent updates, guest comments, validation, CORS, signed sessions, report handling, deletion permissions and owner moderation against SQLite.');

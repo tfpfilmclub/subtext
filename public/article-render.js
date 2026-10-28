@@ -10,5 +10,5 @@ export function renderProse(story, escape) {
 
 export function transcriptIntro(story, escape) {
   if (!story.transcript) return '';
-  return `<section class="transcript-note" lang="bn" aria-label="পাঠ-সংস্করণ সম্পর্কে"><span class="eyebrow">বাংলা পাঠ-সংস্করণ</span><p>মুদ্রিত লেখার সঙ্গে মিলিয়ে প্রস্তুত। নিশ্চিত বানান ও মুদ্রণপ্রমাদ সংশোধিত; মূল বক্তব্য ও ভাষাভঙ্গি সংরক্ষিত।</p>${story.transcriptionNote ? `<p class="transcription-uncertainty">${escape(story.transcriptionNote)}</p>` : ''}<a href="${escape(story.transcript)}" download>লেখাটি ডাউনলোড করুন <span aria-hidden="true">↓</span></a><a href="issue.html?page=${story.page}">মূল মুদ্রণ দেখুন <span aria-hidden="true">↗</span></a></section>`;
+  return `<nav class="article-text-links" lang="bn" aria-label="লেখার অন্য সংস্করণ"><a href="${escape(story.transcript)}" download>লেখাটি ডাউনলোড করুন <span aria-hidden="true">↓</span></a><a href="issue.html?page=${story.page}">ম্যাগাজিনের পাতায় পড়ুন <span aria-hidden="true">↗</span></a></nav>`;
 }

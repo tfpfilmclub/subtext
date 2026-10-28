@@ -60,7 +60,7 @@ npm run check:social
 
 The image preparation command accepts an optional absolute Node executable path. Landscape stills fill the preview; portraits and posters preserve their full composition. The Aaron Sorkin interview, which has no separate story photograph, uses the magazine cover.
 
-English copy is lightly edited for spelling, capitalization, and extraction artifacts. All six Bangla articles have typed reading editions, visually checked against their 13 source pages; the president’s Bangla message is also typed on the About page. Only clear spelling, OCR, spacing and punctuation errors are corrected. Two unclear names are explicitly marked rather than guessed. Original print pages remain available. Reviewed UTF-8 sources are in `content/bangla/`, with an editorial record in `content/bangla/PROOFREADING.md`. `npm run build` regenerates `public/bangla-articles.js` and seven downloadable text files. The Piku article’s complete paragraphs are reproduced; its unfinished final print sentence is preserved only in the original layout.
+English copy is lightly edited for spelling, capitalization, and extraction artifacts. All six Bangla articles have typed reading editions, visually checked against their 13 source pages; the president’s Bangla message is also typed on the About page. Only clear spelling, OCR, spacing and punctuation errors are corrected. The makeup artist's name is confirmed by the user as বিন্তু আপু; the unresolved distributor name remains marked. Original print pages remain available. Reviewed UTF-8 sources are in `content/bangla/`, with an editorial record in `content/bangla/PROOFREADING.md`. `npm run build` regenerates `public/bangla-articles.js` and seven downloadable text files. The Piku article’s complete paragraphs are reproduced; its unfinished final print sentence is preserved only in the original layout.
 
 All 78 extracted originals and their initial WebP copies are retained unchanged. Four low-resolution story images have separate AI-upscaled variants in `public/assets/enhanced/`; article captions identify these and link to the source image for comparison. Upscaling estimates detail rather than recovering new source information. The prompt and provenance notes are recorded in `content/bangla/PROOFREADING.md`, and `public/image-enhancements.js` maps the selected variants. Sharing JPEGs use the selected web artwork. Bangla reading uses self-hosted Noto Serif Bengali under its included SIL Open Font License.
 
@@ -77,8 +77,18 @@ The second command downloads open-source fonts and their licenses, renders the i
 
 The GitHub Actions workflow in `.github/workflows/pages.yml` verifies content, builds the site, and deploys `dist/` to GitHub Pages on a push to `main`. In repository **Settings → Pages**, the source should be **GitHub Actions**. The workflow uses the automatically issued GitHub Actions token; no personal access token is stored in the site or repository.
 
-For another static host, publish the contents of `dist/`. No server, database, or paid service is required.
+For another static host, publish the contents of `dist/`. Magazine pages remain static; shared reader reactions and comments use the separate Sites/Cloudflare D1 service configured in `public/community-config.js`. See `services/community/README.md` for its source, moderation and deployment details.
 
 Magazine text and imagery belong to their respective creators and rights holders. Their inclusion here follows the supplied magazine; this repository does not grant a new license to the magazine or the third-party film artwork. Print design credits are retained on the About page.
 
 Run `npm run check:bangla` after building to verify complete typed content in initial HTML, text downloads, disclosed uncertainties, font files, and upscale variants. Local search includes article bodies and normalizes Bengali Unicode.
+
+## Reading, contributors and conversation
+
+Every article includes a word count and estimated reading time. Counts use Unicode word segmentation over the published article text, excluding navigation and captions. Estimates use 180 Bangla words or 220 English words per minute, rounded up to at least one minute. Watchlists and directories include their displayed lists. These are reading estimates, not timers.
+
+Article bylines and story-card author names link to generated `authors/<id>/` profiles. Each profile lists every story with that author ID and expands automatically when new stories are added. No unverified biographies or portraits have been invented. Generated author HTML is included in the build and does not require JavaScript to read.
+
+Reader reactions and comments are shared through a real database, without reader login. See `services/community/README.md`. The owner can manage comments at https://subtext-reader-community.coolgull21.chatgpt.site/moderation using their ChatGPT account. The magazine's styling and hosting remain unchanged.
+
+Run `npm run check:readers` after building. `npm run check:community` checks the backend against isolated SQLite and requires Node 22.13 or later.

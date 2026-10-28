@@ -1,6 +1,7 @@
 import { articleText } from './article-text.js';
 import { banglaArticles } from './bangla-articles.js';
 import { enhancedImages } from './image-enhancements.js';
+import { readingStats } from './reading.js';
 
 export const issue = {
   title: 'The Inaugural Issue', volume: 1, number: 1, date: 'January 2026',
@@ -38,7 +39,7 @@ export const stories = [
   { slug: 'aaron-sorkin', title: 'আরন সরকিন: সংলাপ এবং চরিত্র নির্মাণ', category: 'Interviews', language: 'বাংলা', author: 'মোঃ রিয়াজুল হোসেন', role: 'Bangla translation', page: 13, end: 14, image: 'p10-01', noImage: true,
     excerpt: 'A translated conversation with Aaron Sorkin about intention, obstacles, and the craft of dialogue.',
     intro: 'Aaron Sorkin discusses dialogue and characterization in a conversation with David Brooks. Read the selected interview in its original Bangla magazine layout.' },
-  { slug: 'underrated-jewels', title: 'Underrated Jewels', category: 'Watchlists', language: 'English', author: 'The SUBTEXT edit', page: 15, end: 15, image: 'p15-02',
+  { slug: 'underrated-jewels', title: 'Underrated Jewels', category: 'Watchlists', language: 'English', author: 'SUBTEXT', page: 15, end: 15, image: 'p15-02',
     excerpt: 'From Wings of Desire to The Salt in Our Waters: a watchlist for the endlessly curious.',
     intro: 'A selection from the inaugural issue: international discoveries alongside a collection of Bengali-language films.' },
   { slug: 'professors-pick', title: 'Professor’s Pick', category: 'Watchlists', language: 'English', author: 'Rezwan Shahriar Sumit', page: 16, end: 17, image: 'p16-01',
@@ -47,7 +48,7 @@ export const stories = [
   { slug: 'shooting-memories', title: 'শুটিং, স্মৃতিচারণ এবং অন্যান্য', category: 'Essays', language: 'বাংলা', author: 'সিফাত রহমান', page: 19, end: 20, image: 'p19-02',
     excerpt: 'Reflections from the set, memories of filmmaking, and the stories that stay with us.',
     intro: 'Read this reflection on shooting and filmmaking in its original Bangla print layout.' },
-  { slug: 'screen-teaches-screen', title: 'When Screen Teaches the Screen', category: 'Resources', language: 'English', author: 'The SUBTEXT edit', page: 21, end: 21, image: 'p15-05', noImage: true,
+  { slug: 'screen-teaches-screen', title: 'When Screen Teaches the Screen', category: 'Resources', language: 'English', author: 'SUBTEXT', page: 21, end: 21, image: 'p15-05', noImage: true,
     excerpt: 'A film student’s shelf of useful resources, from criticism and craft to editing and lighting.',
     intro: 'The magazine’s resource directory brings together places to learn, watch, and think about filmmaking.' },
   { slug: 'baker-street', title: '221B Baker-ভাই Street', category: 'Essays', language: 'English', author: 'Towsif Ahmed (Jeetu)', page: 26, end: 26, image: 'p26-01', portrait: true, tone: 'gold',
@@ -136,3 +137,24 @@ export const storyUrl = slug => `stories/${encodeURIComponent(slug)}/`;
 export const socialImage = slug => `assets/social/${encodeURIComponent(slug)}.jpg`;
 export const socialImageSource = story => story.slug === 'aaron-sorkin' ? 'p01-02' : story.image;
 export const pageUrl = page => `issue.html?page=${page}`;
+export const authorUrl = id => `authors/${encodeURIComponent(id)}/`;
+
+const authorIds = {
+  'tanim-noor': 'shuvo-sen', 'piku': 'nur-hossain-nafish', 'guerrilla': 'maimuna-najnin',
+  'dr-strangelove': 'bikromaditto', 'dear-mother': 'sk-shuvo-sadique', 'aaron-sorkin': 'riazul-hossain',
+  'underrated-jewels': 'subtext', 'professors-pick': 'rezwan-shahriar-sumit', 'shooting-memories': 'sifat-rahman',
+  'screen-teaches-screen': 'subtext', 'baker-street': 'towsif-ahmed-jeetu', 'monihar': 'mallika-afroze',
+  'jafar-panahi': 'mysha-esha', 'devils-advocate': 'sakib-ahmed', 'club-at-a-glance': 'tfp-film-club',
+};
+export const authors = [];
+for (const story of stories) {
+  const known = authors.find(author => author.name === story.author);
+  story.authorId = authorIds[story.slug] || known?.id || story.slug;
+  if (!authors.some(author => author.id === story.authorId)) authors.push({ id: story.authorId, name: story.author, role: story.role || '', language: /[\u0980-\u09ff]/.test(story.author) ? 'bn' : 'en' });
+  let text = (story.body || [story.intro || '']).map(block => typeof block === 'string' ? block : block.heading).join('\n');
+  if (story.slug === 'professors-pick') text += '\n' + professorFilms.map(film => film.title).join('\n');
+  if (story.slug === 'underrated-jewels') text += '\n' + [...foreignFilms, ...bengaliFilms].flat().join(' ');
+  if (story.slug === 'screen-teaches-screen') text += '\n' + resources.map(([title, description]) => `${title} ${description}`).join('\n');
+  if (story.slug === 'club-at-a-glance') text += '\n' + activities.map(([, title, description]) => `${title} ${description}`).join('\n');
+  story.reading = readingStats(text);
+}

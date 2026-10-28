@@ -23,8 +23,10 @@ for (const story of articles) {
   for (const paragraph of story.body) assert(readable.includes(paragraph.replace(/\s+/g, ' ')), `Missing reviewed paragraph in initial HTML: ${story.slug}`);
 }
 const notes = articles.filter(story => story.transcriptionNote);
-assert.equal(notes.length, 2, 'Both unclear source names must remain disclosed');
+assert.equal(notes.length, 1, 'The unresolved distributor name must remain marked');
 for (const story of notes) assert(story.body.some(text => text.includes('[নামটি অস্পষ্ট]') || text.includes('[মূল মুদ্রণে নামটি অস্পষ্ট]')));
+assert(stories.find(story=>story.slug==='shooting-memories').body.some(text=>text.includes('মেকআপের বিন্তু আপু')));
+assert(!stories.find(story=>story.slug==='shooting-memories').body.join(' ').includes('[নামটি অস্পষ্ট]'));
 assert.equal(Object.keys(banglaArticles).length, 7);
 const about = await readFile('dist/about.html', 'utf8');
 assert(about.includes(banglaArticles['presidents-message'].title));
@@ -37,4 +39,4 @@ for (const [id, variant] of Object.entries(enhancedImages)) {
 }
 const css = await readFile('public/assets/fonts/bengali.css', 'utf8');
 for (const match of css.matchAll(/url\(([^)]+)\)/g)) assert((await stat(`public/assets/fonts/${match[1]}`)).size > 0);
-console.log('Verified six complete reviewed Bangla articles in initial HTML, seven text downloads, both disclosed uncertainties, native font files, and four separate upscale variants.');
+console.log('Verified six Bangla reading editions, seven text downloads, confirmed makeup artist name, unresolved distributor marker, font files, and image variants.');

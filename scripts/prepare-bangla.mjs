@@ -3,7 +3,6 @@ import path from 'node:path';
 const root = path.resolve(import.meta.dirname, '..');
 const slugs = ['dear-mother', 'aaron-sorkin', 'shooting-memories', 'tanim-noor', 'monihar', 'jafar-panahi', 'presidents-message'];
 export const transcriptionNotes = {
-  'shooting-memories': 'মেকআপশিল্পীর নামটি মুদ্রণে স্পষ্ট নয়; অনুমান করে পূরণ করা হয়নি।',
   'jafar-panahi': 'পরিবেশক সংস্থার নামটি মুদ্রণে বিকৃত হরফে রয়েছে; অনুমান করে পূরণ করা হয়নি।',
 };
 const records = {};
@@ -15,7 +14,7 @@ for (const slug of slugs) {
   const [title, author] = heading.split(/\r?\n/);
   if (!title || !author || body.length < 3 || source.includes('�')) throw new Error(`Invalid Bangla transcript: ${slug}`);
   records[slug] = { title, author, body, transcriptionNote: transcriptionNotes[slug] || '' };
-  await writeFile(path.join(destination, `${slug}.txt`), `${source}\n\nপাঠ-সংস্করণ: SUBTEXT, Volume 01 / Issue 01, January 2026.\nস্পষ্ট বানান, মুদ্রণ ও OCR-ত্রুটি সংশোধিত; মূল বক্তব্য ও ভাষাভঙ্গি সংরক্ষিত।${transcriptionNotes[slug] ? `\n${transcriptionNotes[slug]}` : ''}\n`, 'utf8');
+  await writeFile(path.join(destination, `${slug}.txt`), `${source}\n`, 'utf8');
 }
 await writeFile(path.join(root, 'public/bangla-articles.js'), `// Generated from reviewed content/bangla/*.txt by scripts/prepare-bangla.mjs.\nexport const banglaArticles = ${JSON.stringify(records, null, 2)};\n`, 'utf8');
 const escape = value => value.replace(/[&<>"']/g, character => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[character]));

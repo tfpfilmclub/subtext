@@ -1,0 +1,5 @@
+import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core';
+export const reactions = sqliteTable('reactions', { story:text('story').notNull(), visitor:text('visitor').notNull(), reaction:text('reaction').notNull() }, table => [primaryKey({columns:[table.story,table.visitor]})]);
+export const comments = sqliteTable('comments', { id:text('id').primaryKey(), story:text('story').notNull(), visitor:text('visitor').notNull(), name:text('name').notNull(), text:text('text').notNull(), createdAt:text('created_at').notNull(), status:text('status').notNull().default('published') }, table => [index('comments_story_date').on(table.story,table.createdAt)]);
+export const reports = sqliteTable('reports', { commentId:text('comment_id').notNull(), visitor:text('visitor').notNull() }, table => [primaryKey({columns:[table.commentId,table.visitor]})]);
+export const rateLimits = sqliteTable('rate_limits', { bucket:text('bucket').notNull(), hour:integer('hour').notNull(), count:integer('count').notNull() }, table => [primaryKey({columns:[table.bucket,table.hour]})]);
