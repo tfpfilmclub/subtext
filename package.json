@@ -10,7 +10,9 @@
     "build": "node scripts/build.mjs",
     "check": "node scripts/check.mjs",
     "check:social": "node scripts/check-social.mjs",
-    "check:bangla": "node scripts/check-bangla.mjs"
+    "check:bangla": "node scripts/check-bangla.mjs",
+    "check:readers": "node scripts/check-readers.mjs",
+    "check:community": "node scripts/check-community.mjs"
   },
   "engines": { "node": ">=20.11.0" }
 }
