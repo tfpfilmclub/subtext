@@ -3,4 +3,6 @@ export const suppliedImages = {
   'aaron-sorkin-collage': { src: 'assets/stories/aaron-sorkin.jpg', alt: 'Aaron Sorkin and a collage of scenes from his films' },
   'strangelove-war-room': { src: 'assets/stories/dr-strangelove-war-room.jpg', alt: 'The circular War Room and its wall maps in Dr. Strangelove' },
   'salt-in-our-waters': { src: 'assets/stories/salt-in-our-waters.jpg', alt: 'A scene from The Salt in Our Waters' },
+  'shooting-memories-train': { src: 'assets/stories/shooting-memories-train.png', alt: 'The ensemble cast in a train compartment in Bonolota Express' },
+  'baker-bhai-illustration': { src: 'assets/stories/baker-bhai-illustration.jpg', alt: 'An orange illustration of Baker Bhai and his companions' },
 };

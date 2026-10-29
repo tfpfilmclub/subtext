@@ -61,6 +61,26 @@ export async function handleCommunity(request, env) {
       const body = encode(utf8.encode(JSON.stringify({sub:crypto.randomUUID(),exp:Math.floor(Date.now()/1000)+180*86400})));
       return reply({token:`${body}.${await sign(env.SESSION_SECRET,body)}`});
     }
+    const viewsRoute = /^\/api\/articles\/([a-z0-9-]+)\/views$/.exec(url.pathname);
+    if (viewsRoute) {
+      const slug = viewsRoute[1];
+      if (!STORIES.has(slug)) fail(404,'Article not found.');
+      if (request.method === 'POST') {
+        if (!visitor || !origin) fail(401,'Refresh the page and try again.');
+        await payload(request);
+        await rateLimit('view',180);
+        const now = Date.now(), cutoff = now - 30*60*1000;
+        // D1 batches are atomic: concurrent refreshes cannot increment the
+        // aggregate without also recording the browser's counting window.
+        await db.batch([
+          db.prepare('INSERT INTO article_views (story, count) SELECT ?, 1 WHERE NOT EXISTS (SELECT 1 FROM view_sessions WHERE story = ? AND visitor = ? AND last_counted_at > ?) ON CONFLICT(story) DO UPDATE SET count = count + 1').bind(slug,slug,visitor,cutoff),
+          db.prepare('INSERT INTO view_sessions (story, visitor, last_counted_at) VALUES (?, ?, ?) ON CONFLICT(story, visitor) DO UPDATE SET last_counted_at = excluded.last_counted_at WHERE last_counted_at <= ?').bind(slug,visitor,now,cutoff),
+          db.prepare('DELETE FROM view_sessions WHERE last_counted_at < ?').bind(now - 86400000),
+        ]);
+      } else if (request.method !== 'GET') fail(405,'Method not allowed.');
+      const total = await db.prepare('SELECT count FROM article_views WHERE story = ?').bind(slug).first();
+      return reply({views:total?.count || 0});
+    }
     const storyRoute = /^\/api\/articles\/([a-z0-9-]+)$/.exec(url.pathname);
     if (storyRoute) {
       const slug = storyRoute[1];

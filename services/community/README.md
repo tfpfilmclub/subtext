@@ -12,6 +12,8 @@ The owner manages comments at https://subtext-reader-community.coolgull21.chatgp
 - Writes require a signed anonymous session, allowed origin and bounded request body. Server-side validation, an invisible honeypot and rate limits reduce casual abuse. Reaction uniqueness is enforced by the database.
 - Rate-limit keys use a keyed hash of the connecting address; raw IP addresses are not stored in the application database. Rate buckets older than 48 hours are pruned.
 - Counts are read from the server, never fabricated or initialized with sample activity. Connection failures leave controls unavailable with a retry option.
+- Article views are shared server counts, starting from this feature's launch. An article opened in a visible browser tab registers a view; the same anonymous browser counts once per article per 30-minute window. Background tabs, previews and reads of the counter endpoint do not increment it. Clearing browser storage creates a new anonymous identity.
+- View registration atomically updates the aggregate and its deduplication record. Deduplication records older than 24 hours are pruned while lifetime totals remain. No reader names, emails or raw IP addresses are stored with views. The counter stays hidden when its service is unavailable.
 
 ## Source and publication
 

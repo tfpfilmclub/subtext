@@ -5,6 +5,7 @@ import { handleCommunity } from '../services/community/community-api.mjs';
 const sqlite=new DatabaseSync(':memory:');
 for(const file of (await readdir('services/community/drizzle')).filter(file=>file.endsWith('.sql')).sort())sqlite.exec(await readFile(`services/community/drizzle/${file}`,'utf8'));
 const db={prepare(sql){const statement=sqlite.prepare(sql);let args=[];return {bind(...values){args=values;return this;},async first(){return statement.get(...args)||null;},async all(){return {results:statement.all(...args)};},async run(){return statement.run(...args);}};}};
+db.batch=async statements=>{sqlite.exec('BEGIN');try{const results=[];for(const statement of statements)results.push(await statement.run());sqlite.exec('COMMIT');return results;}catch(error){sqlite.exec('ROLLBACK');throw error;}};
 const env={DB:db,SESSION_SECRET:'test-only-secret-not-a-production-credential',OWNER_ID:'owner'};
 async function call(path,{method='GET',token,body,origin='https://tfpfilmclub.github.io',owner=false}={}) {
  const response=await handleCommunity(new Request(`https://community.test${path}`,{method,headers:{Origin:origin,'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{ }),...(owner?{'oai-authenticated-user-id':'owner'}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})}),env);
@@ -12,6 +13,17 @@ async function call(path,{method='GET',token,body,origin='https://tfpfilmclub.gi
 }
 const session=async()=>{const result=await call('/api/session',{method:'POST',body:{}});assert.equal(result.status,200);return result.data.token;};
 const first=await session(), second=await session();
+assert.equal((await call('/api/articles/piku/views')).data.views,0);
+assert.equal((await call('/api/articles/unknown/views',{method:'POST',token:first,body:{}})).status,404);
+assert.equal((await call('/api/articles/piku/views',{method:'POST',token:'forged',body:{}})).status,401);
+assert.equal((await call('/api/articles/piku/views',{method:'POST',token:first,origin:'https://evil.test',body:{}})).status,403);
+assert.equal((await call('/api/articles/piku/views',{method:'POST',token:first,body:{}})).data.views,1);
+assert.equal((await call('/api/articles/piku/views',{method:'POST',token:first,body:{}})).data.views,1,'Reloads must not inflate the count');
+assert.equal((await call('/api/articles/piku/views',{method:'POST',token:second,body:{}})).data.views,2,'Different browsers share the total');
+assert.equal((await call('/api/articles/guerrilla/views',{method:'POST',token:first,body:{}})).data.views,1,'Articles have independent totals');
+assert.equal((await call('/api/articles/piku/views')).data.views,2,'Reading a count must not increment it');
+const realNow=Date.now, startedAt=Date.now();
+try{Date.now=()=>startedAt+31*60000;assert.equal((await call('/api/articles/piku/views',{method:'POST',token:first,body:{}})).data.views,3,'A later visit counts again after 30 minutes');Date.now=()=>startedAt+2*86400000;assert.equal((await call('/api/articles/guerrilla/views',{method:'POST',token:second,body:{}})).data.views,2);assert.equal((await call('/api/articles/piku/views')).data.views,3,'Session cleanup must retain the aggregate');}finally{Date.now=realNow;}
 assert.equal((await call('/api/articles/piku',{origin:'https://evil.test'})).status,403);
 assert.equal((await call('/api/articles/unknown')).status,404);
 assert.equal((await call('/api/articles/piku',{method:'POST',token:'forged',body:{reaction:'love'}})).status,401);
@@ -30,4 +42,4 @@ assert.equal((await call('/api/moderation')).status,403);assert.equal((await cal
 assert.equal((await call(`/api/comments/${posted.data.id}/delete`,{method:'POST',owner:true,body:{}})).status,200);
 assert.equal((await call('/api/moderation',{owner:true})).data.comments.length,0);
 sqlite.close();
-console.log('Verified shared reaction counts, idempotent updates, guest comments, validation, CORS, signed sessions, report handling, deletion permissions and owner moderation against SQLite.');
+console.log('Verified shared views, refresh deduplication, later visits, count retention, reactions, guest comments, validation, CORS, signed sessions and moderation against SQLite.');

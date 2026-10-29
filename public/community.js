@@ -3,6 +3,38 @@ const escape = value => String(value).replace(/[&<>"']/g, character => ({'&':'&a
 const heart = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg>';
 const thumb = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10v11H3V10h4Zm0 0 5-8c3 0 3 3 2 7h5a2 2 0 0 1 2 2l-2 8a2 2 0 0 1-2 2H7"/></svg>';
 
+// Reactions, comments and views share one signed anonymous browser session.
+let token, sessionPromise;
+try { token = localStorage.getItem('subtext-reader-session'); } catch {}
+async function getSession() {
+  if (token) return token;
+  if (!sessionPromise) sessionPromise = fetch(`${communityOrigin}/api/session`, {method:'POST',headers:{'Content-Type':'application/json'},body:'{}',signal:AbortSignal.timeout(15000)}).then(async response => {if(!response.ok)throw new Error('Session failed');const data=await response.json();token=data.token;try{localStorage.setItem('subtext-reader-session',token);}catch{}return token;}).finally(()=>{sessionPromise=null;});
+  return sessionPromise;
+}
+async function request(route, options={}, retry=true) {
+  const response = await fetch(`${communityOrigin}${route}`, {...options,signal:AbortSignal.timeout(15000),headers:{'Content-Type':'application/json','Authorization':`Bearer ${await getSession()}`,...options.headers}});
+  if (response.status===401 && retry) {token=null;try{localStorage.removeItem('subtext-reader-session');}catch{}return request(route,options,false);}
+  if (!response.ok) throw new Error(`Community request failed: ${response.status}`);
+  return response.json();
+}
+
+export async function mountArticleViews(element, story) {
+  if (!element || !communityOrigin) return;
+  // Background tabs and social crawlers do not register article views.
+  if (document.visibilityState !== 'visible') {
+    const visible = () => {if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',visible);mountArticleViews(element,story);}};
+    document.addEventListener('visibilitychange',visible);
+    return;
+  }
+  try {
+    const {views} = await request(`/api/articles/${story.slug}/views`,{method:'POST',body:'{}'});
+    if (!Number.isSafeInteger(views) || views < 0 || !element.isConnected) return;
+    const bn = story.language === 'বাংলা';
+    element.querySelector('[data-view-count]').textContent = `${new Intl.NumberFormat(bn?'bn-BD':'en').format(views)} ${bn?'বার দেখা হয়েছে':views===1?'view':'views'}`;
+    element.hidden = false;
+  } catch { /* Keep an unavailable counter hidden instead of showing a false zero. */ }
+}
+
 export async function mountCommunity(container, story) {
   if (!container || !communityOrigin) return;
   const bn = story.language === 'বাংলা';
@@ -11,19 +43,7 @@ export async function mountCommunity(container, story) {
   const $ = selector => container.querySelector(selector);
   const status = $('.community-status');
   const form = $('.comment-form');
-  let token, sessionPromise, state, page=0, working=false;
-  try { token = localStorage.getItem('subtext-reader-session'); } catch {}
-  async function getSession() {
-    if (token) return token;
-    if (!sessionPromise) sessionPromise = fetch(`${communityOrigin}/api/session`, {method:'POST',headers:{'Content-Type':'application/json'},body:'{}',signal:AbortSignal.timeout(15000)}).then(async response => {if(!response.ok)throw new Error('Session failed');const data=await response.json();token=data.token;try{localStorage.setItem('subtext-reader-session',token);}catch{}return token;}).finally(()=>{sessionPromise=null;});
-    return sessionPromise;
-  }
-  async function request(route, options={}, retry=true) {
-    const response = await fetch(`${communityOrigin}${route}`, {...options,signal:AbortSignal.timeout(15000),headers:{'Content-Type':'application/json','Authorization':`Bearer ${await getSession()}`,...options.headers}});
-    if (response.status===401 && retry) {token=null;try{localStorage.removeItem('subtext-reader-session');}catch{}return request(route,options,false);}
-    if (!response.ok) throw new Error(`Community request failed: ${response.status}`);
-    return response.json();
-  }
+  let state, page=0, working=false;
   function failed() {status.textContent=copy.error;$('.community-retry').hidden=false;}
   function render(next, append=false) {
     state=next;
