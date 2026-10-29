@@ -161,3 +161,30 @@
 .article-views svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:1.5}
 .article-meta .article-views[lang=bn]{font-family:'Noto Serif Bengali','Nirmala UI',serif;font-size:13px;line-height:1.7}
 @media(max-width:560px){.story-byline{padding-top:14px}.article-readership{gap:9px 16px}}
+
+/* A shared grid keeps editorial and production credits in balance. */
+.masthead-credits{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.08fr);grid-template-areas:"editor advisor publisher" "committee production publisher";gap:42px 48px;padding-top:34px}
+.credit-editor{grid-area:editor}
+.credit-advisor{grid-area:advisor}
+.credit-committee{grid-area:committee}
+.credit-production{grid-area:production;display:flex;flex-direction:column;gap:34px}
+.credit-publisher{grid-area:publisher;border-left:1px solid var(--rule);padding-left:32px}
+.masthead-credits .eyebrow{display:block;font-size:9px;line-height:1.7;letter-spacing:.12em}
+.masthead-credits h3{font-size:27px;line-height:1.4;margin:12px 0 0;letter-spacing:-.02em}
+.masthead-credits .plain-list{font-size:25px;line-height:1.6;margin:12px 0 0}
+.publisher-contact{margin-top:26px}
+.publisher-contact address{margin-top:0}
+.publisher-contact .text-link{display:table;max-width:100%;overflow-wrap:anywhere}
+@media(max-width:1050px){
+  .masthead-credits{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"editor advisor" "committee production" "publisher publisher";gap:36px 40px}
+  .credit-publisher{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px;border-left:0;border-top:1px solid var(--rule);padding:30px 0 0}
+  .publisher-contact{margin-top:0}
+}
+@media(max-width:640px){
+  .masthead-credits{grid-template-columns:minmax(0,1fr);grid-template-areas:"editor" "advisor" "committee" "production" "publisher";gap:28px;padding-top:28px}
+  .masthead-credits h3{font-size:27px;max-width:24ch}
+  .masthead-credits .plain-list{font-size:25px}
+  .credit-committee,.credit-production{border-top:1px solid var(--rule);padding-top:26px}
+  .credit-production{gap:28px}
+  .credit-publisher{grid-template-columns:minmax(0,1fr);gap:22px;padding-top:26px}
+}
